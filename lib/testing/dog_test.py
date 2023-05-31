@@ -3,6 +3,8 @@ import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
+
+
 from dog import (
     create_table,
     find_by_id,
@@ -30,8 +32,13 @@ class TestDog:
         '''contains function "create_table()" that takes a declarative_base and creates a SQLite database.'''
         
         engine = create_engine(SQLITE_URL)
+        engine = create_engine(SQLITE_URL)
+        Session = sessionmaker(bind=engine)
+        session = Session()
         create_table(Base, engine)
         assert os.path.exists(db_dir)
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
     def test_saves_dog(self):
@@ -47,7 +54,8 @@ class TestDog:
 
         assert session.query(Dog).first().name == 'joey'
         assert session.query(Dog).first().breed == 'cocker spaniel'
-
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
     def test_gets_all(self):
@@ -69,6 +77,9 @@ class TestDog:
         
         session.query(Dog).delete()
         session.commit()
+
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
 
@@ -87,6 +98,9 @@ class TestDog:
         conan = find_by_name(session, 'conan')
         assert(conan.name == 'conan')
 
+        
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
     def test_finds_by_id(self):
@@ -106,6 +120,9 @@ class TestDog:
         assert dog_1.name == 'conan'
         assert dog_1.breed == 'chihuahua'
 
+        
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
     def test_finds_by_name_and_breed(self):
@@ -123,6 +140,10 @@ class TestDog:
         fanny = find_by_name_and_breed(session, 'fanny', 'cockapoo')
         assert fanny.name == 'fanny' and fanny.breed == 'cockapoo'
 
+
+        
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
 
     def test_updates_record(self):
@@ -143,4 +164,7 @@ class TestDog:
         
         assert updated_record.breed == 'bulldog'
         
+        
+        session.close_all()
+        engine.dispose()
         os.remove(db_dir)
